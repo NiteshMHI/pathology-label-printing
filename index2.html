@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Barcode Label Generator</title>
+
+    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: Arial, Helvetica, sans-serif;
+            background: #ececec;
+        }
+
+        .toolbar {
+
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+
+        }
+
+        input {
+
+            padding: 6px;
+            width: 140px;
+
+        }
+
+        button {
+
+            padding: 8px 18px;
+            cursor: pointer;
+            font-weight: bold;
+
+        }
+
+        #labels {
+
+            display: grid;
+
+            grid-template-columns: 38mm 38mm;
+
+            column-gap: 0mm;
+
+            row-gap: 0mm;
+
+            justify-content: start;
+
+        }
+
+        /* LABEL */
+
+        .label {
+
+            width: 38mm;
+            height: 25mm;
+
+            background: white;
+
+            border: 1px dashed #999;
+
+            padding: 3mm;
+
+            display: flex;
+
+            flex-direction: column;
+
+            justify-content: center;
+
+            align-items: center;
+
+            overflow: hidden;
+
+        }
+
+        /* BARCODE */
+
+        .label svg {
+
+            width: 30mm;
+
+            height: 10mm;
+
+        }
+
+        /* TEXT */
+
+        .serial {
+
+            margin-top: 2mm;
+
+            font-size: 10pt;
+
+            font-weight: bold;
+
+            text-align: center;
+
+            width: 100%;
+
+        }
+
+        /* PRINT */
+
+        @page {
+
+            size: 76mm auto;
+
+            margin: 0;
+
+        }
+
+        @media print {
+
+            body {
+
+                margin: 0;
+
+                padding: 0;
+
+            }
+
+            .toolbar {
+
+                display: none;
+
+            }
+
+            #labels {
+
+                display: grid;
+
+                grid-template-columns: 38mm 38mm;
+
+                column-gap: 0;
+
+                row-gap: 0;
+
+            }
+
+            .label {
+
+                border: none;
+
+                page-break-inside: avoid;
+
+            }
+
+        }
+    </style>
+
+</head>
+
+<body>
+
+    <div class="toolbar">
+
+        <label>Start</label>
+
+        <input id="start" value="600049999">
+
+        <label>End</label>
+
+        <input id="end" value="600050000">
+
+        <button onclick="generateLabels()">
+
+            Generate
+
+        </button>
+
+        <button onclick="window.print()">
+
+            Print / Save PDF
+
+        </button>
+
+    </div>
+
+    <div id="labels"></div>
+
+    <script>
+
+        function barcodeSVG(id) {
+
+            return '<svg id="' + id + '"></svg>';
+
+        }
+
+        function createLabel(text, index) {
+
+            return `
+
+<div class="label">
+
+    ${barcodeSVG("bc" + index)}
+
+    <div class="serial">${text}</div>
+
+</div>
+
+`;
+
+        }
+
+        function generateLabels() {
+
+            let start = parseInt(document.getElementById("start").value);
+
+            let end = parseInt(document.getElementById("end").value);
+
+            let html = "";
+
+            let values = [];
+
+            for (let serial = start; serial <= end; serial++) {
+
+                values.push(serial + "P");
+                values.push(serial + "F");
+
+                values.push(serial.toString());
+                values.push(serial.toString());
+
+                values.push(serial.toString());
+                values.push(serial.toString());
+
+            }
+
+            values.forEach((v, i) => {
+
+                html += createLabel(v, i);
+
+            });
+
+            document.getElementById("labels").innerHTML = html;
+
+            values.forEach((v, i) => {
+
+                JsBarcode("#bc" + i, v, {
+
+                    format: "CODE128",
+
+                    displayValue: false,
+
+                    width: 1.25,
+
+                    height: 34,
+
+                    margin: 0,
+
+                    lineColor: "#000"
+
+                });
+
+            });
+
+        }
+
+    </script>
+
+</body>
+
+</html>
